@@ -1,6 +1,6 @@
-if exists('g:loaded_yggdrasill')
+if exists('g:loaded_multiTerm')
 	finish
 endif
-let g:loaded_yggdrasill = 1
+let g:loaded_multiTerm = 1
 
-command! -complete=file -nargs=* YTerm call yggdrasill#YggdrasillTerm(<q-mods>,<f-args>)
+command! -complete=file -nargs=* MTerm call multiTerm#multiTerm(<q-mods>,<f-args>)
