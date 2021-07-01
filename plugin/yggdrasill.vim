@@ -3,4 +3,4 @@ if exists('g:loaded_yggdrasill')
 endif
 let g:loaded_yggdrasill = 1
 
-command! -complete=file YTerm call yggdrasill#YggdrasillTerm(<q-mods>)
+command! -complete=file -nargs=* YTerm call yggdrasill#YggdrasillTerm(<q-mods>,<f-args>)

@@ -1,63 +1,114 @@
-"yggdrasill vim plugin
+"yggdrasilt vim plugin
 
-let bash_jobs = []
-let prompt_active = 0
+let term_buflist = []
+let job_dict = {}
+let term_num = 1
 
-func TextEntered(text)
-	call ch_sendraw(g:bash_job,a:text .. "\n")
+hi User8 ctermfg=46 ctermbg=16
+hi User9 ctermfg=15 ctermbg=16
+
+func! SetTermStatusLine()
+	let l:term_statusline = '%9*'
+	for b in g:term_buflist
+		if b == g:term_buflist[g:active_num]
+			let l:term_statusline = trim(l:term_statusline,'|') . '%*%8*' . bufname(b) . '%*%9*'
+		else
+			let l:term_statusline = l:term_statusline . bufname(b) . '|'
+		endif
+	endfor
+	return l:term_statusline
 endfunc
 
-func GotOutput(channel,msg)
-	if a:channel == g:active_ch
-		call appendbufline(g:buf,line("$",bufwinid(g:buf)) -1,"- " . a:msg)
-	endif
+func TermWindow(mods)
+	call execute(a:mods . " new")
 endfunc
+
 
 func JobExit(job,status)
-	quit!
-	let g:prompt_active = 0
+	let g:exit_buf = g:job_dict[job_info(a:job)["process"]]
+	call filter(g:term_buflist,'v:val !~ g:exit_buf')
+	unlet g:job_dict[job_info(a:job)["process"]]
+	if winnr() != g:term_win
+		call win_gotoid(g:term_win)
+	endif
+	if empty(g:term_buflist)
+		quit!
+		unlet g:active_num
+		return 0
+	elseif g:active_num > (len(g:term_buflist) - 1)
+		let g:active_num = 0
+	endif
+	call execute("b! " . g:term_buflist[g:active_num])
+	setlocal statusline=%!SetTermStatusLine()
 endfunc
 
-func Sigint()
-	call job_stop(g:bash_job,"int")
-endfunc
-
-func PromptWindow()
-	new
-	set buftype=prompt
-	set nonu
-	let g:buf = bufnr('')
-	call prompt_setcallback(g:buf,function("TextEntered"))
-	call prompt_setprompt(g:buf,'command: ')
-	call prompt_setinterrupt(g:buf,function("Sigint"))
-
-	startinsert
-endfunc
 
 func yggdrasill#YggdrasillTerm(mods)
-	let g:bash_job = job_start(["/bin/bash"],{"out_cb": function('GotOutput'),"err_cb": function('GotOutput'),"exit_cb": function('JobExit')})
-	call add(g:bash_jobs,g:bash_job)
-	let g:active_ch = job_getchannel(g:bash_job)
-
-	if g:prompt_active == 0
-		call PromptWindow()
-		let g:prompt_active = 1
+	let l:active_term = term_start("/bin/bash",{"term_name":"yggdrasillTerm" . g:term_num,"hidden":1,"exit_cb":function("JobExit")})
+	call add(g:term_buflist,l:active_term)
+	let g:job_dict[job_info(term_getjob(l:active_term))["process"]] = l:active_term
+	if !exists('g:active_num')
+		let g:active_num = 0
+		call TermWindow(a:mods)
+	else
+		if bufwinid(g:term_buflist[g:active_num]) == -1
+			call TermWindow(a:mods)
+		elseif winnr() != bufwinid(g:term_buflist[g:active_num])
+			call win_gotoid(bufwinid(g:term_buflist[g:active_num]))
+		endif
+		let g:term_win = bufwinid(g:term_buflist[g:active_num])
+		let g:active_num = g:active_num + 1
 	endif
-
+	call execute("b! " . g:term_buflist[g:active_num])
+	tmap <silent><buffer> <C-y>l <C-w>:call yggdrasill#TermNext()<CR>
+	tmap <silent><buffer> <C-y><C-l> <C-w>:call yggdrasill#TermNext()<CR>
+	tmap <silent><buffer> <C-y>h <C-w>:call yggdrasill#TermPrev()<CR>
+	tmap <silent><buffer> <C-y><C-h> <C-w>:call yggdrasill#TermPrev()<CR>
+	setlocal statusline=%!SetTermStatusLine()
+	let g:term_num = g:term_num + 1
 endfunc
 
-func yggdrasill#TermChange()
-	let g:bash_job = bash_jobs[0]
-	let g:active_ch = job_getchannel(g:bash_job)
+
+func yggdrasill#YggdrasillScreen()
+	let l:active_term = term_start("/bin/bash",{"term_name":"yggdrasillTerm" . g:term_num,"hidden":1,"exit_cb":function("JobExit")})
+	call add(g:term_buflist,l:active_term)
+	let g:job_dict[job_info(term_getjob(l:active_term))["process"]] = l:active_term
+	if !exists('g:term_win')
+		call TermWindow(a:mods)
+		let g:active_num = 0
+	else
+		let g:active_num = g:active_num + 1
+	endif
+	if winnr() != g:term_win
+		call win_gotoid(g:term_win)
+	endif
+	call execute("b! " . g:term_buflist[g:active_num])
+	tmap <silent><buffer> <C-y>l <C-w>:call yggdrasill#TermNext()<CR>
+	tmap <silent><buffer> <C-y><C-l> <C-w>:call yggdrasill#TermNext()<CR>
+	tmap <silent><buffer> <C-y>h <C-w>:call yggdrasill#TermPrev()<CR>
+	tmap <silent><buffer> <C-y><C-h> <C-w>:call yggdrasill#TermPrev()<CR>
+	setlocal statusline=%!SetTermStatusLine()
+	let g:term_num = g:term_num + 1
 endfunc
 
-"C言語のコンパイルを行う
-func yggdrasill#CCompile(...)
-	let l:fname=expand("%")
-	if term_list() == []
-		rightbelow term
+
+func yggdrasill#TermNext()
+	let g:active_num = g:active_num + 1
+	if g:active_num > (len(g:term_buflist) - 1)
+		let g:active_num = 0
 	endif
-	let l:opts=get(a:,1,"")
-	let l:text="gcc " . l:fname . " " . l:opts . "\n"
-	call term_sendkeys(term_list()[0],l:text)
-endfunction
+	call execute("b! " . g:term_buflist[g:active_num])
+	setlocal statusline=%!SetTermStatusLine()
+endfunc
+
+
+func yggdrasill#TermPrev()
+	let g:active_num = g:active_num - 1
+	if g:active_num < 0
+		let g:active_num = (len(g:term_buflist) - 1)
+	endif
+	call execute("b! " . g:term_buflist[g:active_num])
+	setlocal statusline=%!SetTermStatusLine()
+endfunc
+
+

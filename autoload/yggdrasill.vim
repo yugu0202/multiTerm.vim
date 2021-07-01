@@ -34,6 +34,7 @@ func JobExit(job,status)
 	if empty(g:term_buflist)
 		quit!
 		unlet g:active_num
+		let g:term_num = 1
 		return 0
 	elseif g:active_num > (len(g:term_buflist) - 1)
 		let g:active_num = 0
@@ -43,28 +44,35 @@ func JobExit(job,status)
 endfunc
 
 
-func yggdrasill#YggdrasillTerm(mods)
+func yggdrasill#YggdrasillTerm(mods,...)
+	if index(a:000,"-screen") != -1
+		let l:screen_name = a:000[index(a:000,"-screen") + 1]
+	endif
 	let l:active_term = term_start("/bin/bash",{"term_name":"yggdrasillTerm" . g:term_num,"hidden":1,"exit_cb":function("JobExit")})
 	call add(g:term_buflist,l:active_term)
 	let g:job_dict[job_info(term_getjob(l:active_term))["process"]] = l:active_term
+
 	if !exists('g:active_num')
 		let g:active_num = 0
-		call TermWindow(a:mods)
+		call execute(a:mods . " new")
+	elseif bufwinid(g:term_buflist[g:active_num]) == -1
+		call execute(a:mods . " new")
+		let g:active_num = len(g:term_buflist) - 1
 	else
-		if bufwinid(g:term_buflist[g:active_num]) == -1
-			call TermWindow(a:mods)
-		elseif winnr() != bufwinid(g:term_buflist[g:active_num])
+		if winnr() != bufwinid(g:term_buflist[g:active_num])
 			call win_gotoid(bufwinid(g:term_buflist[g:active_num]))
 		endif
-		let g:term_win = bufwinid(g:term_buflist[g:active_num])
 		let g:active_num = g:active_num + 1
 	endif
 	call execute("b! " . g:term_buflist[g:active_num])
-	tmap <silent><buffer> <C-y>l <C-w>:call yggdrasill#TermNext()<CR>
-	tmap <silent><buffer> <C-y><C-l> <C-w>:call yggdrasill#TermNext()<CR>
-	tmap <silent><buffer> <C-y>h <C-w>:call yggdrasill#TermPrev()<CR>
-	tmap <silent><buffer> <C-y><C-h> <C-w>:call yggdrasill#TermPrev()<CR>
+	let g:term_win = bufwinid(g:term_buflist[g:active_num])
+
+	tmap <silent><buffer> <C-y>l <Cmd>call yggdrasill#TermNext()<CR>
+	tmap <silent><buffer> <C-y><C-l> <Cmd>call yggdrasill#TermNext()<CR>
+	tmap <silent><buffer> <C-y>h <Cmd>call yggdrasill#TermPrev()<CR>
+	tmap <silent><buffer> <C-y><C-h> <Cmd>call yggdrasill#TermPrev()<CR>
 	setlocal statusline=%!SetTermStatusLine()
+
 	let g:term_num = g:term_num + 1
 endfunc
 
@@ -73,21 +81,28 @@ func yggdrasill#YggdrasillScreen()
 	let l:active_term = term_start("/bin/bash",{"term_name":"yggdrasillTerm" . g:term_num,"hidden":1,"exit_cb":function("JobExit")})
 	call add(g:term_buflist,l:active_term)
 	let g:job_dict[job_info(term_getjob(l:active_term))["process"]] = l:active_term
-	if !exists('g:term_win')
-		call TermWindow(a:mods)
+
+	if !exists('g:active_num')
 		let g:active_num = 0
+		call execute(a:mods . " new")
+	elseif bufwinid(g:term_buflist[g:active_num]) == -1
+		call execute(a:mods . " new")
+		let g:active_num = len(g:term_buflist) - 1
 	else
+		if winnr() != g:term_num
+			call win_gotoid(g:term_num)
+		endif
 		let g:active_num = g:active_num + 1
 	endif
-	if winnr() != g:term_win
-		call win_gotoid(g:term_win)
-	endif
 	call execute("b! " . g:term_buflist[g:active_num])
+	let g:term_win = bufwinid(g:term_buflist[g:active_num])
+
 	tmap <silent><buffer> <C-y>l <C-w>:call yggdrasill#TermNext()<CR>
 	tmap <silent><buffer> <C-y><C-l> <C-w>:call yggdrasill#TermNext()<CR>
 	tmap <silent><buffer> <C-y>h <C-w>:call yggdrasill#TermPrev()<CR>
 	tmap <silent><buffer> <C-y><C-h> <C-w>:call yggdrasill#TermPrev()<CR>
 	setlocal statusline=%!SetTermStatusLine()
+
 	let g:term_num = g:term_num + 1
 endfunc
 
