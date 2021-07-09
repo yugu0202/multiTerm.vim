@@ -21,14 +21,6 @@ func! SetTermStatusLine()
 	return l:term_statusline
 endfunc
 
-func TermSetUp()
-	tmap <silent><buffer> <C-m>l <C-w>:call multiTerm#TermNext()<CR>
-	tmap <silent><buffer> <C-m><C-l> <C-w>:call multiTerm#TermNext()<CR>
-	tmap <silent><buffer> <C-m>h <C-w>:call multiTerm#TermPrev()<CR>
-	tmap <silent><buffer> <C-m><C-h> <C-w>:call multiTerm#TermPrev()<CR>
-	setlocal statusline=%!SetTermStatusLine()
-endfunc
-
 
 func JobExit(job,status)
 	let s:exit_buf = s:job_dict[job_info(a:job)["process"]]
@@ -73,7 +65,7 @@ func multiTerm#multiTerm(mods,...)
 	call execute("b! " . s:term_buflist[s:active_num])
 	let s:term_win = bufwinid(s:term_buflist[s:active_num])
 
-	call TermSetUp()
+	setlocal statusline=%!SetTermStatusLine()
 	let s:term_num = s:term_num + 1
 endfunc
 
@@ -98,7 +90,7 @@ func multiTerm#multiScreen()
 	call execute("b! " . g:term_buflist[g:active_num])
 	let g:term_win = bufwinid(g:term_buflist[g:active_num])
 
-	call TermSetUp()
+	setlocal statusline=%!SetTermStatusLine()
 
 	let g:term_num = g:term_num + 1
 endfunc
