@@ -4,15 +4,15 @@ let term_buflist = []
 let job_dict = {}
 let term_num = 1
 
-hi User8 ctermfg=46 ctermbg=8
-hi User9 ctermfg=15 ctermbg=8
+hi MTactive ctermfg=46 ctermbg=8
+hi MTpassive ctermfg=15 ctermbg=8
 
 
 func! SetTermStatusLine()
-	let l:term_statusline = '%9*'
+	let l:term_statusline = '%#MTpassive#'
 	for b in g:term_buflist
 		if b == g:term_buflist[g:active_num]
-			let l:term_statusline = l:term_statusline . '%*%8*' . bufname(b) . '%*%9*|'
+			let l:term_statusline = l:term_statusline . '%#MTactive#' . bufname(b) . '%#MTpassive#|'
 			let l:num = 1
 		else
 			let l:term_statusline = l:term_statusline . bufname(b) . "|"
@@ -22,10 +22,10 @@ func! SetTermStatusLine()
 endfunc
 
 func TermSetUp()
-	tmap <silent><buffer> <C-y>l <C-w>:call multiTerm#TermNext()<CR>
-	tmap <silent><buffer> <C-y><C-l> <C-w>:call multiTerm#TermNext()<CR>
-	tmap <silent><buffer> <C-y>h <C-w>:call multiTerm#TermPrev()<CR>
-	tmap <silent><buffer> <C-y><C-h> <C-w>:call multiTerm#TermPrev()<CR>
+	tmap <silent><buffer> <C-m>l <C-w>:call multiTerm#TermNext()<CR>
+	tmap <silent><buffer> <C-m><C-l> <C-w>:call multiTerm#TermNext()<CR>
+	tmap <silent><buffer> <C-m>h <C-w>:call multiTerm#TermPrev()<CR>
+	tmap <silent><buffer> <C-m><C-h> <C-w>:call multiTerm#TermPrev()<CR>
 	setlocal statusline=%!SetTermStatusLine()
 endfunc
 
