@@ -1,4 +1,4 @@
-"multiTerm vim plugin ver.0.1.4dev
+"multiTerm vim plugin ver.0.1.4
 
 let s:term_buflist = []
 let s:job_dict = {}
