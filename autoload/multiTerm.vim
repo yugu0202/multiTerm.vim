@@ -24,7 +24,7 @@ endfunc
 
 func JobExit(job,status)
 	let s:exit_buf = s:job_dict[job_info(a:job)["process"]]
-	call filter(s:term_buflist,'v:val !~ s:exit_buf')
+	call filter(s:term_buflist,'v:val != s:exit_buf')
 	unlet s:job_dict[job_info(a:job)["process"]]
 	if winnr() != s:term_win
 		call win_gotoid(s:term_win)
