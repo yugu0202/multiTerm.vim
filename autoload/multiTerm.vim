@@ -65,7 +65,6 @@ func multiTerm#multiTerm(mods,...)
 		if winnr() != bufwinid(s:term_buflist[s:active_num])
 			call win_gotoid(bufwinid(s:term_buflist[s:active_num]))
 		endif
-		let s:active_num = s:active_num + 1
 	endif
 	call execute("b! " . s:term_buflist[s:active_num])
 	let s:term_win = bufwinid(s:term_buflist[s:active_num])
