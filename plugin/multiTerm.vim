@@ -2,20 +2,22 @@ if exists('g:loaded_multiTerm')
 	finish
 endif
 let g:loaded_multiTerm = 1
-let g:MT_screen_cooperation = 1
+if system("screen -v 1>/dev/null") == ""
+	let g:MT_screen_cooperation = 1
+else
+	let g:MT_screen_cooperation = 0
+endif
 
 func! MTcomp(lead,line,pos)
 	let l:comp = []
 
-	if g:MT_screen_cooperation == 0
-		return []
-	endif
-
-	if a:line =~ "^MTerm.*-screen \a*$"
+	if a:line =~ "^MTerm.*-screen \a*$" && g:MT_screen_cooperation == 1
 		let s:screenList = system("screen -ls") "ここで分割してfor文でリスト化　このままだと動かない　screenが死んでるときの対策必要
 		call add(l:comp,s:screenList)
 	elseif a:line =~ "MTerm.*$"
-		call add(l:comp,"-screen")
+		if g:MT_screen_cooperation == 1
+			call add(l:comp,"-screen")
+		endif
 		call add(l:comp,"-name")
 	endif
 

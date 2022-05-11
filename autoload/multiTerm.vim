@@ -43,13 +43,13 @@ endfunc
 
 
 func multiTerm#multiTerm(mods,...)
-	if index(a:000,"-screen") != -1
+	if index(a:000,"-screen") != -1 && g:MT_screen_cooperation == 1
 		let l:screen_name = a:000[index(a:000,"-screen") + 1]
 	endif
 	if index(a:000,"-name") != -1
 		let l:term_name = a:000[index(a:000,"-name") + 1]
 	else
-		let l:term_name = "multiTerm" . s:term_num
+		let l:term_name = "multiTerm"
 	endif
 	let l:active_term = term_start("/bin/bash",{"term_name":l:term_name,"hidden":1,"exit_cb":function("JobExit")})
 	call add(s:term_buflist,l:active_term)
