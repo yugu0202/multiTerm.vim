@@ -16,15 +16,21 @@ func! MTcomp(lead,line,pos)
 		call add(l:comp,s:screenList)
 	elseif a:line =~ "MTerm.*$"
 		call add(l:comp,"-screen")
+		call add(l:comp,"-name")
 	endif
 
 	let l:rtComp = deepcopy(l:comp)
 
 	for l:text in l:comp
-		if l:text !~ "^".a:lead
+		if l:text !~ "^". a:lead
+			call filter(l:rtComp, 'v:val != "'.l:text.'"')
+		endif
+		
+		if match(a:line,l:text) != -1
 			call filter(l:rtComp, 'v:val != "'.l:text.'"')
 		endif
 	endfor
+
 
 	return l:rtComp
 endfunc
