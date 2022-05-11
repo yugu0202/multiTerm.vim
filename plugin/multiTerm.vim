@@ -11,9 +11,12 @@ endif
 func! MTcomp(lead,line,pos)
 	let l:comp = []
 
-	if a:line =~ "^MTerm.*-screen \a*$" && g:MT_screen_cooperation == 1
-		let s:screenList = system("screen -ls") "ここで分割してfor文でリスト化　このままだと動かない　screenが死んでるときの対策必要
-		call add(l:comp,s:screenList)
+	if a:line =~ "^MTerm.*-screen.*$" && g:MT_screen_cooperation == 1
+		let l:screen = system('screen -ls | sed -e ''1d'' -e ''$d'' -e ''s/.*\.\(.*\)*(.*(.*/\1/'' -e s/"\t"//g') " screenが死んでるときの対策必要
+		let l:screen_list = split(l:screen,"\n")
+		for l:screen_name in l:screen_list
+			call add(l:comp,l:screen_name)
+		endfor
 	elseif a:line =~ "MTerm.*$"
 		if g:MT_screen_cooperation == 1
 			call add(l:comp,"-screen")
@@ -25,10 +28,6 @@ func! MTcomp(lead,line,pos)
 
 	for l:text in l:comp
 		if l:text !~ "^". a:lead
-			call filter(l:rtComp, 'v:val != "'.l:text.'"')
-		endif
-		
-		if match(a:line,l:text) != -1
 			call filter(l:rtComp, 'v:val != "'.l:text.'"')
 		endif
 	endfor
