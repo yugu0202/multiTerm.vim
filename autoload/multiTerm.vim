@@ -1,4 +1,4 @@
-"multiTerm vim plugin ver.0.1.4
+"multiTerm vim plugin ver.0.1.5dev
 
 let s:term_buflist = []
 let s:job_dict = {}
@@ -43,10 +43,15 @@ endfunc
 
 
 func multiTerm#multiTerm(mods,...)
-	if index(a:000,"-screen") != -1
+	if index(a:000,"-screen") != -1 && g:MT_screen_cooperation == 1
 		let l:screen_name = a:000[index(a:000,"-screen") + 1]
 	endif
-	let l:active_term = term_start("/bin/bash",{"term_name":"yggdrasillTerm" . s:term_num,"hidden":1,"exit_cb":function("JobExit")})
+	if index(a:000,"-name") != -1
+		let l:term_name = a:000[index(a:000,"-name") + 1]
+	else
+		let l:term_name = "multiTerm"
+	endif
+	let l:active_term = term_start("/bin/bash",{"term_name":l:term_name,"hidden":1,"exit_cb":function("JobExit")})
 	call add(s:term_buflist,l:active_term)
 	let s:job_dict[job_info(term_getjob(l:active_term))["process"]] = l:active_term
 
@@ -60,7 +65,6 @@ func multiTerm#multiTerm(mods,...)
 		if winnr() != bufwinid(s:term_buflist[s:active_num])
 			call win_gotoid(bufwinid(s:term_buflist[s:active_num]))
 		endif
-		let s:active_num = s:active_num + 1
 	endif
 	call execute("b! " . s:term_buflist[s:active_num])
 	let s:term_win = bufwinid(s:term_buflist[s:active_num])
