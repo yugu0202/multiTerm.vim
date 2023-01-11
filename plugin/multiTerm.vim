@@ -2,7 +2,7 @@ if exists('g:loaded_multiTerm')
 	finish
 endif
 let g:loaded_multiTerm = 1
-if system("screen -v 1>/dev/null") == ""
+if ! system("screen -v 1>/dev/null")
 	let g:MT_screen_cooperation = 1
 else
 	let g:MT_screen_cooperation = 0

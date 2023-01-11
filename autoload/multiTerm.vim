@@ -45,6 +45,9 @@ endfunc
 func multiTerm#multiTerm(mods,...)
 	if index(a:000,"-screen") != -1 && g:MT_screen_cooperation == 1
 		let l:screen_name = a:000[index(a:000,"-screen") + 1]
+		let l:command_word = "/bin/screen"
+	else
+		let l:command_word = "/bin/bash"
 	endif
 	if index(a:000,"-name") != -1
 		let l:term_name = a:000[index(a:000,"-name") + 1]
