@@ -39,6 +39,7 @@ func JobExit(job,status)
 	endif
 	call execute("b! " . s:term_buflist[s:active_num])
 	setlocal statusline=%!SetTermStatusLine()
+	wincmd p
 endfunc
 
 
@@ -46,7 +47,11 @@ func multiTerm#multiTerm(mods,...)
 	if index(a:000,"-screen") != -1 && g:MT_screen_cooperation == 1
 		let l:screen_name = a:000[index(a:000,"-screen") + 1]
 		let l:command_word = "/bin/screen"
-	else
+	endif
+	if index(a:000,"-job") != -1
+		let l:command_word = a:000[index(a:000,"-job") + 1]
+	endif
+	if exists("l:command_word")
 		let l:command_word = "/bin/bash"
 	endif
 	if index(a:000,"-name") != -1
@@ -54,7 +59,7 @@ func multiTerm#multiTerm(mods,...)
 	else
 		let l:term_name = "multiTerm"
 	endif
-	let l:active_term = term_start("/bin/bash",{"term_name":l:term_name,"hidden":1,"exit_cb":function("JobExit")})
+	let l:active_term = term_start(l:command_word,{"term_name":l:term_name,"hidden":1,"exit_cb":function("JobExit")})
 	call add(s:term_buflist,l:active_term)
 	let s:job_dict[job_info(term_getjob(l:active_term))["process"]] = l:active_term
 

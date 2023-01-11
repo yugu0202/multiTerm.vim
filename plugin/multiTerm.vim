@@ -22,6 +22,7 @@ func! MTcomp(lead,line,pos)
 			call add(l:comp,"-screen")
 		endif
 		call add(l:comp,"-name")
+		call add(l:comp,"-job")
 	endif
 
 	let l:rtComp = deepcopy(l:comp)
